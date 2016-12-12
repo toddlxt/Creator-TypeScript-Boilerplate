@@ -76,17 +76,20 @@ export class ComplicateComponent extends cc.Component {
 }
 ```
 
-## 注意事项（请在开始之前阅读本节）  
+## 注意事项（请在开始之前仔细阅读本节）  
 1. 需要重命名或移动某个代码文件时，请**务必**先在Creator中先重命名或移动assets下的js文件，再同样操作typescript目录下的ts文件（最好在WebStorm下进行ts文件的重命名、移动等操作，它会自动修正其它文件中对该文件的import）。因为当你在Creator中移动js文件的时候，Creator会自动修正所有场景和prefab中对该js文件的引用。  
  >一个典型的错误是：你先在typesciprt目录下移动了ts文件，这个ts文件会被自动编译为assets目录的对应新路径下的js文件，但是同时assets中的旧的js文件依旧存在。Creator会报文件重复的错误。这时如果你简单地删掉旧js文件，所有引用旧js文件的场景和prefab都会丢失这个引用。  
 
-2. TypeScript的类型声明文件请使用.d.ts后缀。以.d.ts为后缀的文件只会被TypeScript用作代码提示和检查，不会编译到assets目录下。所有的类型声明文件建议统一放到typescript/types目录下。  
+2. 只有在需要声明Component的时候，才使用@CCComponent等装饰器。其它类不需要使用@CCComponent。
+3. TypeScript的类型声明文件请使用.d.ts后缀。以.d.ts为后缀的文件只会被TypeScript用作代码提示和检查，不会编译到assets目录下。所有的类型声明文件建议统一放到typescript/types目录下。
+
  >用.ts作文件后缀也可以写类型声明，但是会编译一个空文件到assets目录下。  
-3. 可以在typescript/types目录下的GlobalNameSpace.d.ts中定义全局变量的类型，但是注意不要改动第一行的：  
+ 
+4. 可以在typescript/types目录下的GlobalNameSpace.d.ts中定义全局变量的类型，但是注意不要改动第一行的：  
 
         /// <reference path="../../creator.d.ts"/>
 正是这一行引入了Creator自带的creator.d.ts。  
-4. 此项目的creator.d.ts被做了一些修正，以提供更好的代码提示。例如getComponent()的函数签名被改为：  
+5. 此项目的creator.d.ts被做了一些修正，以提供更好的代码提示。例如getComponent()的函数签名被改为：  
 
         // 如果传入的参数是一个newable的类，则返回该类的实例
         getComponent<T>(typeOrClassName: (new()=>T)): T;
@@ -110,7 +113,7 @@ export class ComplicateComponent extends cc.Component {
                  this.getComponent(A). // 此处IDE会提示A类所有public的方法
              }
          }
-5. 文件重命名、类重命名、变量重命名、方法重命名，请统统使用IDE的重构功能。WebStorm中重命名的快捷键是Shift+F6，或者右击文件、类名、变量名、方法名，弹出的菜单中选择refactor->rename。因为TypeScript对你的代码结构有着非常好的了解，所有IDE可以正确地修改所有对重命名对象的引用。例如：  
+6. 文件重命名、类重命名、变量重命名、方法重命名，请统统使用IDE的重构功能。WebStorm中重命名的快捷键是Shift+F6，或者右击文件、类名、变量名、方法名，弹出的菜单中选择refactor->rename。因为TypeScript对你的代码结构有着非常好的了解，所有IDE可以正确地修改所有对重命名对象的引用。例如：  
 
         // Example.1.ts:
         export class A {
@@ -144,8 +147,8 @@ export class ComplicateComponent extends cc.Component {
 从此再也不用担心变量命名啦！先写完再说，哪里不爽改哪里！  
 > 注意：若你正在将项目的js代码升级为ts，在升级完成前请慎用重构功能。因为此时TypeScript对你的代码了解不完全，IDE有可能发生错误重构，例如上例中有可能将`B.t`也命名为`B.tt`。所有代码转换为ts之后，我还没有发现过WebStorm有重构错误。  
 
-6. assets/Script/plugins下的文件请保持在Creator中设置为插件的状态。  
-7. Component的四个装饰器的实现依赖引擎CCClass.js中的两个函数，但是当前cc.Class没有将这两个方法暴露出来，因此我只好将引擎的CCClass拷贝一份到decorators目录下简单修改并export这两个方法（分了1.3和1.4两个版本）。Jare大神已经同意在Creator 1.5中暴露出这两个方法或类似API，到时就不用再集成一次CCClass了。
+7. assets/Script/plugins下的文件请保持在Creator中设置为插件的状态。  
+8. Component的四个装饰器的实现依赖引擎CCClass.js中的两个函数，但是当前cc.Class没有将这两个方法暴露出来，因此我只好将引擎的CCClass拷贝一份到decorators目录下简单修改并export这两个方法（分了1.3和1.4两个版本）。Jare大神已经同意在Creator 1.5中暴露出这两个方法或类似API，到时就不用再集成一次CCClass了。
 
 ## 将已有的JS项目升级为TS  
 0. 在决定开始之前，请先备份好你的项目！  
