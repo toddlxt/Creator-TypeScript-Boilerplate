@@ -1,0 +1,7 @@
+{
+  "name": "Creator-TypeScript-Boilerplate",
+  "version": "0.1.0",
+  "dependencies": {
+    "fetch-polyfill": "^0.8.2"
+  }
+}

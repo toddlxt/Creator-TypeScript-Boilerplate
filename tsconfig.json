@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "es2015",
+    "target": "es5",
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "outDir": "assets/Script/",
+    "allowJs": true,
+    "lib": ["dom", "es5", "es2015.promise"],
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "pretty": true,
+    "noEmitHelpers": true
+  },
+  "include": [
+    "typescript/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "assets"
+  ]
+}
