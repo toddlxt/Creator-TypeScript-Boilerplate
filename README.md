@@ -9,7 +9,8 @@
 5. 在project/typescript目录下编辑你的代码，它们将被自动编译至project/assets/Script/目录下（在project/tsconfig.json中修改outDir字段以更改目标目录）。  
 
 ## 功能介绍  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了简单展示TypeScript的功能，此项目使用TypeScript的类与泛型功能实现了一个简单的MVC架构（请看AbstractController, AbstractModel与AbstractComponent三个类），并在此之上实现了Hello模块（请看HelloController, HelloModel与HelloView），实现了使用async, await异步使用fetch请求本机IP并查询IP对应的国家、城市、区域的功能。不需要Controller和Model的View直接继承AbstractSimpleComponent即可。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了简单展示TypeScript的功能，此项目使用TypeScript的类与泛型功能实现了一个简单的MVC架构（请看AbstractController, AbstractModel与AbstractComponent三个类），并在此之上实现了Hello模块（请看HelloController, HelloModel与HelloView），实现了使用async, await异步使用fetch请求本机IP并查询IP对应的国家、城市、区域的功能。（数据是向我的一个快要废弃的服务器请求的，只是为了展示怎样使用async, await, fetch进行网络请求，可能随时停用导致请求不到数据。）
+>不需要Controller和Model的View直接继承AbstractSimpleComponent即可。 
 
 ## 使用说明  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了充分利用TypeScript，请不要使用cc.Class来创建类，而应充分使用class, extends, implements等关键字来定义和扩展类。并使用import关键字取代require()来导入模块，export关键字取代module.exports来导出模块。  
@@ -21,14 +22,22 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;有一种特殊情况是，继承自cc.Component的类（在Creator中可以拖到节点属性编辑器上的脚本）是无法用TypeScript的extends cc.Component关键字来实现的，因为cc.Class内部还会做一些额外的工作。  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了解决此问题，你需要使用project/typescript/decorators/ComponentDecorators.ts中提供的四个装饰器：@CCComponent, @CCEditor, @CCProperty, @CCMixins（除了CCComponent外其它装饰器都是可选的）。  
 
-一个最简单的Component定义如下：  
+一个简单的Component定义像这样，熟悉cc.Class()函数的童鞋应该一眼就能认出对应的功能：  
 ```js
-import {CCComponent} from "../decorators/ComponentDecorators";
+// SimpleComponent.ts:
+import {CCComponent, CCProperty} from "../decorators/ComponentDecorators";
 @CCComponent
-export class SimplestComponent extends cc.Component {}
+export class SimpleComponent extends cc.Component {
+    @CCProperty({
+        default: null,
+        type: cc.Label
+    })
+    public someLabel: cc.Label;
+}
 ```
 四个装饰器完整的使用方法如下：  
 ```js
+// ComplicateComponent.ts:
 import {CCComponent, CCEditor, CCProperty, CCMixins} from "../decorators/ComponentDecorators";
 // 定义该Component的Editor属性，对应JS中传入cc.Class()的editor参数。
 @CCEditor({
@@ -66,9 +75,10 @@ export class ComplicateComponent extends cc.Component {
 
 ## 注意事项（请在开始之前阅读本节）  
 1. 需要重命名或移动某个代码文件时，请**务必**先在Creator中先重命名或移动assets下的js文件，再同样操作typescript目录下的ts文件（最好在WebStorm下进行ts文件的重命名、移动等操作，它会自动修正其它文件中对该文件的import）。因为当你在Creator中移动js文件的时候，Creator会自动修正所有场景和prefab中对该js文件的引用。  
->一个典型的错误是：你先在typesciprt目录下移动了ts文件，这个ts文件会被自动编译为assets目录的对应新路径下的js文件，但是同时assets中的旧的js文件依旧存在。Creator会报文件重复的错误。这时如果你简单地删掉旧js文件，所有引用旧js文件的场景和prefab都会丢失这个引用。  
+ >一个典型的错误是：你先在typesciprt目录下移动了ts文件，这个ts文件会被自动编译为assets目录的对应新路径下的js文件，但是同时assets中的旧的js文件依旧存在。Creator会报文件重复的错误。这时如果你简单地删掉旧js文件，所有引用旧js文件的场景和prefab都会丢失这个引用。  
+
 2. TypeScript的类型声明文件请使用.d.ts后缀。以.d.ts为后缀的文件只会被TypeScript用作代码提示和检查，不会编译到assets目录下。所有的类型声明文件建议统一放到typescript/types目录下。  
->用.ts作文件后缀也可以写类型声明，但是会编译一个空文件到assets目录下。  
+ >用.ts作文件后缀也可以写类型声明，但是会编译一个空文件到assets目录下。  
 3. 可以在typescript/types目录下的GlobalNameSpace.d.ts中定义全局变量的类型，但是注意不要改动第一行的：  
 
         /// <reference path="../../creator.d.ts"/>
@@ -128,7 +138,7 @@ this.getComponent(cc.Graphics).的时候，会自动提示出cc.Graphics的方�
 > 注意：若你正在将项目的js代码升级为ts，在升级完成前请慎用重构功能。因为此时TypeScript对你的代码了解不完全，IDE有可能发生错误重构，例如上例中有可能将`B.t`也命名为`B.tt`。所有代码转换为ts之后，我还没有发现过WebStorm有重构错误。  
 
 6. assets/Script/plugins下的文件请保持在Creator中设置为插件的状态。  
-7. Component的四个装饰器的实现依赖引擎CCClass.js中的两个函数，但是当前cc.Class没有将这两个方法暴露出来，因此我只好将引擎的CCClass拷贝一份到decorators目录下简单修改并export这两个方法（分了1.3和1.4两个版本）。Jare大神已经同意在Creator 1.5中暴露出这两个方法或类似API，到时就不用再集成一次CCClass了。  
+7. Component的四个装饰器的实现依赖引擎CCClass.js中的两个函数，但是当前cc.Class没有将这两个方法暴露出来，因此我只好将引擎的CCClass拷贝一份到decorators目录下简单修改并export这两个方法（分了1.3和1.4两个版本）。Jare大神已经同意在Creator 1.5中暴露出这两个方法或类似API，到时就不用再集成一次CCClass了。
 
 ## 将已有的JS项目升级为TS  
 0. 在决定开始之前，请先备份好你的项目！  
