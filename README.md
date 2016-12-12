@@ -1,12 +1,12 @@
 # Creator-TypeScript-Boilerplate
 在Cocos Creator中使用TypeScript的示例项目。
 ## 环境搭建  
-此项目已经在Creator 1.3.2, 1.3.3-beta1, 1.4.0-beta1, 1.4.0-beta2中测试运行正常（Chrome与Windows模拟器下），直接打开即可运行。但是如果你需要更改TypeScript代码，还需要以下步骤搭建运行环境。如果你需要在自己的项目中使用TypeScript，请务必备份好自己的项目，并阅读文末的“注意事项”。  
-1. 克隆或下载解压此项目至本地目录（假设为project）。  
-2. 安装nodejs, npm（国内用户推荐使用cnpm，https://npm.taobao.org/）。  
-3. 命令行中运行该命令全局安装TypeScript： `cnpm install typescript -g`。  
-4. 在IDE（如WebStorm）中开启TypeScript自动编译功能（WebStorm开启方法：File->Settings->Languages & Frameworks->TypeScript，右边 勾选Use TypeScript Service与Enable TypeScript Compiler），或使用命令行进入project目录并运行`tsc -w`使TypeScript自动监视文件修改并自动编译。  
-5. 在project/typescript目录下编辑你的代码，它们将被自动编译至project/assets/Script/目录下（在project/tsconfig.json中修改outDir字段以更改目标目录）。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;此项目已经在Creator 1.3.2, 1.3.3-beta1, 1.4.0-beta1, 1.4.0-beta2中测试运行正常（Chrome与Windows模拟器下），直接打开即可运行。但是如果你需要更改TypeScript代码，还需要以下步骤搭建运行环境。如果你需要在自己的项目中使用TypeScript，请务必备份好自己的项目，并阅读文末的“注意事项”。  
+  1. 克隆或下载解压此项目至本地目录（假设为project）。  
+  2. 安装nodejs, npm（国内用户推荐使用cnpm，https://npm.taobao.org/）。  
+  3. 命令行中运行该命令全局安装TypeScript： `cnpm install typescript -g`。  
+  4. 在IDE（如WebStorm）中开启TypeScript自动编译功能（WebStorm开启方法：File->Settings->Languages & Frameworks->TypeScript，右边 勾选Use TypeScript Service与Enable TypeScript Compiler），或使用命令行进入project目录并运行`tsc -w`使TypeScript自动监视文件修改并自动编译。  
+  5. 在project/typescript目录下编辑你的代码，它们将被自动编译至project/assets/Script/目录下（在project/tsconfig.json中修改outDir字段以更改目标目录）。  
 
 ## 功能介绍  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了简单展示TypeScript的功能，此项目使用TypeScript的类与泛型功能实现了一个简单的MVC架构（请看AbstractController, AbstractModel与AbstractComponent三个类），并在此之上实现了Hello模块（请看HelloController, HelloModel与HelloView），实现了使用async, await异步使用fetch请求本机IP并查询IP对应的国家、城市、区域的功能。（数据是向我的一个快要废弃的服务器请求的，只是为了展示怎样使用async, await, fetch进行网络请求，可能随时停用导致请求不到数据。）
@@ -20,9 +20,9 @@
 >如果你使用WebStorm等较为智能的IDE，完整路径并不会成为问题，反而能让你一眼明白文件的位置。例如在WebStorm中，你只需要在编辑器中打出想引入的类名的前几个字符，IDE会自动提示出完整的类名，当你选中正确的类名并回车后，完整的import from路径会自动添加到文件头。你甚至不用自己写任何一行import。  
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;有一种特殊情况是，继承自cc.Component的类（在Creator中可以拖到节点属性编辑器上的脚本）是无法用TypeScript的extends cc.Component关键字来实现的，因为cc.Class内部还会做一些额外的工作。  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了解决此问题，你需要使用project/typescript/decorators/ComponentDecorators.ts中提供的四个装饰器：@CCComponent, @CCEditor, @CCProperty, @CCMixins（除了CCComponent外其它装饰器都是可选的）。  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了解决此问题，你需要使用project/typescript/decorators/ComponentDecorators.ts中提供的四个装饰器：@CCComponent, @CCEditor, @CCProperty, @CCMixins（除了@CCComponent外其它装饰器对于一个Component来说都是可选的）。  
 
-一个简单的Component定义像这样，熟悉cc.Class()函数的童鞋应该一眼就能认出对应的功能：  
+一个简单的Component定义像这样：  
 ```js
 // SimpleComponent.ts:
 import {CCComponent, CCProperty} from "../decorators/ComponentDecorators";
@@ -35,10 +35,12 @@ export class SimpleComponent extends cc.Component {
     public someLabel: cc.Label;
 }
 ```
-四个装饰器完整的使用方法如下：  
+四个装饰器完整的使用方法如下，熟悉cc.Class()函数的童鞋应该一眼就能认出对应的功能：  
 ```js
 // ComplicateComponent.ts:
 import {CCComponent, CCEditor, CCProperty, CCMixins} from "../decorators/ComponentDecorators";
+// 不使用Mixin功能的童鞋请忽略这个import
+import {mixin1, mixin2, mixin3} from "./Mixins";
 // 定义该Component的Editor属性，对应JS中传入cc.Class()的editor参数。
 @CCEditor({
     executeInEditMode: true
@@ -47,6 +49,7 @@ import {CCComponent, CCEditor, CCProperty, CCMixins} from "../decorators/Compone
 @CCComponent
 // 定义该Component的Mixin（如果不知道什么是Mixin或不使用Mixin的，请忽略该装饰器）。
 // 注意：@CCMixins装饰器必须先于@CCComponent使用（即写在@CCComponent下面，更靠近类的定义的地方）。
+// 注意：每个Mixin作为@CCMixins装饰器的一个参数传入，而非传入一个Mixin数组。
 @CCMixins(mixin1, mixin2, mixin3)
 export class ComplicateComponent extends cc.Component {
     // 定义一个Component属性，对应JS中传入cc.Class()的properties字段的参数。
@@ -89,20 +92,24 @@ export class ComplicateComponent extends cc.Component {
         getComponent<T>(typeOrClassName: (new()=>T)): T;
         // 函数重载，如果传入的参数是string则返回any
         getComponent(typeOrClassName: string): any;
-这样如果你传入getComponent()的是一个类（注意不是字符串形式的类名），TypeScript就会知道返回的是这个类的实例。这样你在IDE中输入
-this.getComponent(cc.Graphics).的时候，会自动提示出cc.Graphics的方法。  
-该功能也适用与任何自定义的Component，例如：  
+ 这样如果你传入getComponent()的是一个类（注意不是字符串形式的类名），TypeScript就会知道返回的是这个类的实例。这样你在IDE中输入`this.getComponent(cc.Graphics).`的时候，IDE会自动提示出cc.Graphics的方法。该功能也适用于任何自定义的Component，例如：  
 
-        // A.ts:
-        @CCComponent
-        export class A extends cc.Component {
-            public B() {
-            }
-        }
-        // Test.ts:
-        import {A} from './A.ts';
-        ...
-            this.getComponent(A). // 此处IDE会提示A类的所有public方法
+         // A.ts:
+         @CCComponent
+         export class A extends cc.Component {
+             public B() {
+             }
+         }
+ 在其它类中引用A：  
+ 
+         // Test.ts:
+         import {A} from './A.ts';
+         @CCComponent
+         export class C extends cc.Component {
+             public D() {
+                 this.getComponent(A). // 此处IDE会提示A类所有public的方法
+             }
+         }
 5. 文件重命名、类重命名、变量重命名、方法重命名，请统统使用IDE的重构功能。WebStorm中重命名的快捷键是Shift+F6，或者右击文件、类名、变量名、方法名，弹出的菜单中选择refactor->rename。因为TypeScript对你的代码结构有着非常好的了解，所有IDE可以正确地修改所有对重命名对象的引用。例如：  
 
         // Example.1.ts:
