@@ -10,6 +10,7 @@ var HelloView = (function (_super) {
         this.initLabels();
         this.controller = new HelloController();
         this.controller.init(this);
+        this.move10();
     };
     HelloView.prototype.initLabels = function () {
         this.ipLabel.string = "正在加载IP...";
@@ -39,6 +40,38 @@ var HelloView = (function (_super) {
             this.cityLabel.string = "加载城市信息失败";
             this.countyLabel.string = "加载区域信息失败";
         }
+    };
+    HelloView.prototype.move10 = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var i;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        i = 0;
+                        _a.label = 1;
+                    case 1:
+                        if (!(i < 10))
+                            return [3 /*break*/, 4];
+                        return [4 /*yield*/, this.asyncRunAction(this.ipLabel.node, cc.sequence(cc.moveBy(0.5, -10, 0), cc.moveBy(0.5, 10, 0)))];
+                    case 2:
+                        _a.sent();
+                        _a.label = 3;
+                    case 3:
+                        i++;
+                        return [3 /*break*/, 1];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HelloView.prototype.asyncRunAction = function (node, action) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        node.runAction(cc.sequence(action, cc.callFunc(resolve)));
+                    })];
+            });
+        });
     };
     return HelloView;
 }(AbstractComponent));

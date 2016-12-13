@@ -20,6 +20,7 @@ export class HelloView extends AbstractComponent<HelloController, HelloModel> {
         this.initLabels();
         this.controller = new HelloController();
         this.controller.init(this);
+        this.move10();
     }
 
     private initLabels() {
@@ -50,5 +51,23 @@ export class HelloView extends AbstractComponent<HelloController, HelloModel> {
             this.cityLabel.string = "加载城市信息失败";
             this.countyLabel.string = "加载区域信息失败";
         }
+    }
+
+    private async move10() {
+        for (let i = 0; i < 10; i++) {
+            await this.asyncRunAction(this.ipLabel.node, cc.sequence(
+                cc.moveBy(0.5, -10, 0),
+                cc.moveBy(0.5, 10, 0)
+            ));
+        }
+    }
+
+    private async asyncRunAction(node: cc.Node, action: cc.Action) {
+        return new Promise<void>((resolve, reject) => {
+            node.runAction(cc.sequence(
+                action,
+                cc.callFunc(resolve)
+            ));
+        });
     }
 }
