@@ -12,7 +12,9 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了简单展示TypeScript的功能，此项目使用TypeScript的类与泛型功能实现了一个简单的MVC架构（请看AbstractController, AbstractModel与AbstractComponent三个类），并在此之上实现了Hello模块（请看HelloController, HelloModel与HelloView），实现了使用async, await异步使用fetch请求本机IP并查询IP对应的国家、城市、区域的功能。（数据是向我的一个快要废弃的服务器请求的，只是为了展示怎样使用async, await, fetch进行网络请求，可能随时停用导致请求不到数据。）
 >不需要Controller和Model的View直接继承AbstractSimpleComponent即可。 
 
-## 使用说明  
+>已集成了Fetch的Polyfill。Fetch的使用请参考：[MDN Fetch文档](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch)  
+
+## 使用说明
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了充分利用TypeScript，请不要使用cc.Class来创建类，而应充分使用class, extends, implements等关键字来定义和扩展类。并使用import关键字取代require()来导入模块，export关键字取代module.exports来导出模块。  
 >小提示：使用export而不是export default，从而在IDE中获得更好的重构体验（如在WebStrom中使用export时，对导出的模块重命名也会重命名其它文件中该模块的名字，而export default不会）。  
 
@@ -157,8 +159,11 @@ export class ComplicateComponent extends cc.Component {
 3. 在你的项目根目录下新建typescript目录，拷贝assets中的所有js代码至typescript目录。  
 4. 将此项目的typescript/decorators目录复制到你的typescript目录。  
 5. 将此项目的typescript/plugins/TypeScriptHelper.js复制到你的typescript目录，***并在编译到assets目录后在Creator中将该文件设置为插件！*** 这是TypeScript的“运行库”。  
-6. 将typescript目录下你的代码全部重命名为.ts。然后使用import代替require，用export代替module.exports，用ES6的class代替cc.Class，用@CCComponent, @CCProperty, @CCEditor来实现你的Component。  
+6. 如果需要在原生平台使用Promise和Fetch，还需要将此项目的typescript/plugins/Fetch.js复制到你的typescript目录，***并在编译到assets目录后在Creator中将该文件设置为插件！**
+7. 将typescript目录下你的代码全部重命名为.ts。然后使用import代替require，用export代替module.exports，用ES6的class代替cc.Class，用@CCComponent, @CCProperty, @CCEditor来实现你的Component。  
 
 ## 参考资料  
 [TypeScript文档](http://tslang.cn/docs/handbook/basic-types.html)  
 [TypeScript编译选项](http://tslang.cn/docs/handbook/compiler-options.html)
+[MDN Promise文档](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+[MDN Fetch文档](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch)
