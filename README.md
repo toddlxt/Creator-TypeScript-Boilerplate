@@ -164,6 +164,6 @@ export class ComplicateComponent extends cc.Component {
 
 ## 参考资料  
 [TypeScript文档](http://tslang.cn/docs/handbook/basic-types.html)  
-[TypeScript编译选项](http://tslang.cn/docs/handbook/compiler-options.html)
-[MDN Promise文档](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+[TypeScript编译选项](http://tslang.cn/docs/handbook/compiler-options.html)  
+[MDN Promise文档](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)  
 [MDN Fetch文档](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch)
