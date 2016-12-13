@@ -33,8 +33,9 @@ export function CCComponent(constructor) {
     if (constructor.length > 0) {
         cc.warn("Please do not define parameters for a component constructor in " + getScriptName() + "!");
     }
+    let uuid = getUUID();
+    if (defined[uuid]) return;
     constructor.$super = cc.Component;
-    var uuid = getUUID();
     var cls = define(void 0, constructor, currentMixins[uuid], void 0, {});
     var name = cc.js.getClassName(cls);
     declareProperties(cls, name, currentProperties[uuid], constructor, void 0);

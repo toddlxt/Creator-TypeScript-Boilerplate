@@ -174,8 +174,7 @@ function getBaseClassWherePropertyDefined_DEV (propName, cls) {
         return res;
     }
 }
-
-var preprocessAttrs = function (properties, className, cls) {
+var preprocessAttrs =  function (properties, className, cls) {
     for (var propName in properties) {
         var val = properties[propName];
         var isLiteral = val && val.constructor === Object;
@@ -220,6 +219,11 @@ var preprocessAttrs = function (properties, className, cls) {
                     }
                     else if (val.set) {
                         cc.error('The "default" value of "%s.%s" should not be used with a "set" function.',
+                            className, propName);
+                    }
+                    else if (cc.Class._isCCClass(val.default)) {
+                        val.default = null;
+                        cc.error('The "default" value of "%s.%s" can not be an constructor. Set default to null please.',
                             className, propName);
                     }
                 }
@@ -329,6 +333,7 @@ m.cleanEval_fireClass = function (code) {
     var fireClass = eval(code);
     return fireClass;
 };
+// jshint evil: false
 var Misc = m;
 
 var BUILTIN_ENTRIES = ['name', 'extends', 'mixins', 'ctor', 'properties', 'statics', 'editor'];
@@ -340,7 +345,7 @@ var TYPO_TO_CORRECT = CC_DEV && {
         constructor: 'ctor'
     };
 
-var INVALID_STATICS = CC_DEV && ['name', '__ctors__', '__props__', 'arguments', 'call', 'apply', 'caller',
+var INVALID_STATICS_DEV = CC_DEV && ['name', '__ctors__', '__props__', 'arguments', 'call', 'apply', 'caller',
         'length', 'prototype'];
 
 var deferredInitializer = {
@@ -603,7 +608,7 @@ function doDefine (className, baseClass, mixins, constructor, options) {
 
             // mixin statics (this will also copy editor attributes for component)
             for (var p in mixin)
-                if (mixin.hasOwnProperty(p) && INVALID_STATICS.indexOf(p) < 0)
+                if (mixin.hasOwnProperty(p) && (!CC_DEV || INVALID_STATICS_DEV.indexOf(p) < 0))
                     fireClass[p] = mixin[p];
 
             // mixin attributes
@@ -691,16 +696,28 @@ function getNewValueTypeCode (value) {
     var clsName = JS.getClassName(value);
     var type = value.constructor;
     var res = 'new ' + clsName + '(';
-    for (var i = 0; i < type.__props__.length; i++) {
-        var prop = type.__props__[i];
-        var propVal = value[prop];
-        if (typeof propVal === 'object') {
-            cc.error('Can not construct %s because it contains object property.', clsName);
-            return 'new ' + clsName + '()';
+    var i;
+    if (type === cc.Mat3 || type === cc.Mat4) {
+        var data = value.data;
+        for (i = 0; i < data.length; i++) {
+            res += data[i];
+            if (i < data.length - 1) {
+                res += ',';
+            }
         }
-        res += propVal;
-        if (i < type.__props__.length - 1) {
-            res += ',';
+    }
+    else {
+        for (i = 0; i < type.__props__.length; i++) {
+            var prop = type.__props__[i];
+            var propVal = value[prop];
+            if (typeof propVal === 'object') {
+                cc.error('Can not construct %s because it contains object property.', clsName);
+                return 'new ' + clsName + '()';
+            }
+            res += propVal;
+            if (i < type.__props__.length - 1) {
+                res += ',';
+            }
         }
     }
     return res + ')';
@@ -1118,7 +1135,7 @@ function CCClass (options) {
         var staticPropName;
         if (CC_DEV) {
             for (staticPropName in statics) {
-                if (INVALID_STATICS.indexOf(staticPropName) !== -1) {
+                if (INVALID_STATICS_DEV.indexOf(staticPropName) !== -1) {
                     cc.error('Cannot define %s.%s because static member name can not be "%s".', name, staticPropName,
                         staticPropName);
                 }

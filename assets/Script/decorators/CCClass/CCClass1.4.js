@@ -22,6 +22,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
+
 var JS = cc.js;
 var Enum = cc.Enum;
 var _isPlainEmptyObj_DEV = function (obj) {
@@ -50,8 +51,9 @@ var SerializableAttrs = {
     editorOnly: {},
     rawType: {},
 };
+
 // 预处理 notify 等扩展属性
-function parseNotify(val, propName, notify, properties) {
+function parseNotify (val, propName, notify, properties) {
     if (val.get || val.set) {
         if (CC_DEV) {
             cc.warn('"notify" can\'t work with "get/set" !');
@@ -62,6 +64,7 @@ function parseNotify(val, propName, notify, properties) {
         // 添加新的内部属性，将原来的属性修改为 getter/setter 形式
         // 以 _ 开头将自动设置property 为 visible: false
         var newKey = "_N$" + propName;
+
         val.get = function () {
             return this[newKey];
         };
@@ -70,6 +73,7 @@ function parseNotify(val, propName, notify, properties) {
             this[newKey] = value;
             notify.call(this, oldValue);
         };
+
         var newValue = {};
         properties[newKey] = newValue;
         // 将不能用于get方法中的属性移动到newValue中
@@ -87,7 +91,8 @@ function parseNotify(val, propName, notify, properties) {
         cc.warn('"notify" must work with "default" !');
     }
 }
-function checkUrl(val, className, propName, url) {
+
+function checkUrl (val, className, propName, url) {
     if (Array.isArray(url)) {
         if (url.length > 0) {
             url = url[0];
@@ -113,13 +118,14 @@ function checkUrl(val, className, propName, url) {
     }
     val.type = url;
 }
-function parseType(val, type, className, propName) {
+
+function parseType (val, type, className, propName) {
     if (Array.isArray(type)) {
         if (CC_EDITOR) {
             var isArray = function (defaultVal) {
                 defaultVal = getDefault(defaultVal);
                 return Array.isArray(defaultVal);
-            }; // require lazily to avoid circular require() calls
+            };   // require lazily to avoid circular require() calls
             if (!isArray(val.default)) {
                 cc.warn('The "default" attribute of "%s.%s" must be an array', className, propName);
             }
@@ -135,7 +141,8 @@ function parseType(val, type, className, propName) {
         if (typeof type === 'function') {
             if (cc.RawAsset.isRawAssetType(type)) {
                 cc.warn('The "type" attribute of "%s.%s" must be child class of cc.Asset, ' +
-                    'otherwise you should use "url: %s" instead', className, propName, cc.js.getClassName(type));
+                    'otherwise you should use "url: %s" instead', className, propName,
+                    cc.js.getClassName(type));
             }
         }
         else if (type === 'Number') {
@@ -146,14 +153,16 @@ function parseType(val, type, className, propName) {
         }
     }
 }
-function postCheckType(val, type, className, propName) {
+
+function postCheckType (val, type, className, propName) {
     if (CC_EDITOR && typeof type === 'function') {
         if (cc.Class._isCCClass(type) && val.serializable !== false && !cc.js._getClassId(type, false)) {
             cc.warn('Can not serialize "%s.%s" because the specified type is anonymous, please provide a class name or set the "serializable" attribute of "%s.%s" to "false".', className, propName, className, propName);
         }
     }
 }
-function getBaseClassWherePropertyDefined_DEV(propName, cls) {
+
+function getBaseClassWherePropertyDefined_DEV (propName, cls) {
     if (CC_DEV) {
         var res;
         for (; cls && cls.__props__ && cls.__props__.indexOf(propName) !== -1; cls = cls.$super) {
@@ -165,11 +174,12 @@ function getBaseClassWherePropertyDefined_DEV(propName, cls) {
         return res;
     }
 }
-var preprocessAttrs = function (properties, className, cls) {
+var preprocessAttrs =  function (properties, className, cls) {
     for (var propName in properties) {
         var val = properties[propName];
         var isLiteral = val && val.constructor === Object;
-        if (!isLiteral) {
+
+        if ( !isLiteral ) {
             if (Array.isArray(val) && val.length > 0) {
                 val = {
                     default: [],
@@ -204,14 +214,22 @@ var preprocessAttrs = function (properties, className, cls) {
             if (CC_EDITOR) {
                 if ('default' in val) {
                     if (val.get) {
-                        cc.error('The "default" value of "%s.%s" should not be used with a "get" function.', className, propName);
+                        cc.error('The "default" value of "%s.%s" should not be used with a "get" function.',
+                            className, propName);
                     }
                     else if (val.set) {
-                        cc.error('The "default" value of "%s.%s" should not be used with a "set" function.', className, propName);
+                        cc.error('The "default" value of "%s.%s" should not be used with a "set" function.',
+                            className, propName);
+                    }
+                    else if (cc.Class._isCCClass(val.default)) {
+                        val.default = null;
+                        cc.error('The "default" value of "%s.%s" can not be an constructor. Set default to null please.',
+                            className, propName);
                     }
                 }
                 else if (!val.get && !val.set) {
-                    cc.error('Property "%s.%s" must define at least one of "default", "get" or "set".', className, propName);
+                    cc.error('Property "%s.%s" must define at least one of "default", "get" or "set".',
+                        className, propName);
                 }
             }
             if (CC_DEV && !val.override && cls.__props__.indexOf(propName) !== -1) {
@@ -223,12 +241,15 @@ var preprocessAttrs = function (properties, className, cls) {
             if (notify) {
                 parseNotify(val, propName, notify, properties);
             }
+
             if ('type' in val) {
                 parseType(val, val.type, className, propName);
             }
+
             if ('url' in val) {
                 checkUrl(val, className, propName, val.url);
             }
+
             if ('type' in val) {
                 postCheckType(val, val.type, className, propName);
             }
@@ -236,14 +257,13 @@ var preprocessAttrs = function (properties, className, cls) {
     }
 };
 var m = {};
+
 m.propertyDefine = function (ctor, sameNameGetSets, diffNameGetSets) {
-    function define(np, propName, getter, setter) {
+    function define (np, propName, getter, setter) {
         var pd = Object.getOwnPropertyDescriptor(np, propName);
         if (pd) {
-            if (pd.get)
-                np[getter] = pd.get;
-            if (pd.set && setter)
-                np[setter] = pd.set;
+            if (pd.get) np[getter] = pd.get;
+            if (pd.set && setter) np[setter] = pd.set;
         }
         else {
             var getterFunc = np[getter];
@@ -269,6 +289,7 @@ m.propertyDefine = function (ctor, sameNameGetSets, diffNameGetSets) {
         define(np, propName, getset[0], getset[1]);
     }
 };
+
 /**
  * @param {Number} x
  * @return {Number}
@@ -283,6 +304,7 @@ m.NextPOT = function (x) {
     x = x | (x >> 16);
     return x + 1;
 };
+
 //var DirtyFlags = m.DirtyFlags = {
 //    TRANSFORM: 1 << 0,
 //    SIZE: 1 << 1,
@@ -297,7 +319,9 @@ m.NextPOT = function (x) {
 //};
 //
 //DirtyFlags.WIDGET = DirtyFlags.TRANSFORM | DirtyFlags.SIZE;
+
 // wrap a new scope to enalbe minify
+
 // jshint evil: true
 m.cleanEval = function (code) {
     return eval(code);
@@ -309,19 +333,26 @@ m.cleanEval_fireClass = function (code) {
     var fireClass = eval(code);
     return fireClass;
 };
+// jshint evil: false
 var Misc = m;
+
 var BUILTIN_ENTRIES = ['name', 'extends', 'mixins', 'ctor', 'properties', 'statics', 'editor'];
+
 var TYPO_TO_CORRECT = CC_DEV && {
-    extend: 'extends',
-    property: 'properties',
-    static: 'statics',
-    constructor: 'ctor'
-};
-var INVALID_STATICS = CC_DEV && ['name', '__ctors__', '__props__', 'arguments', 'call', 'apply', 'caller',
-    'length', 'prototype'];
+        extend: 'extends',
+        property: 'properties',
+        static: 'statics',
+        constructor: 'ctor'
+    };
+
+var INVALID_STATICS_DEV = CC_DEV && ['name', '__ctors__', '__props__', 'arguments', 'call', 'apply', 'caller',
+        'length', 'prototype'];
+
 var deferredInitializer = {
+
     // Configs for classes which needs deferred initialization
     datas: null,
+
     // register new class
     // data - {cls: cls, cb: properties, mixins: options.mixins}
     push: function (data) {
@@ -337,6 +368,7 @@ var deferredInitializer = {
             }, 0);
         }
     },
+
     init: function () {
         var datas = this.datas;
         if (datas) {
@@ -359,11 +391,12 @@ var deferredInitializer = {
         }
     }
 };
+
 ///**
 // * both getter and prop must register the name into __props__ array
 // * @param {String} name - prop name
 // */
-function appendProp(cls, name /*, isGetter*/) {
+function appendProp (cls, name/*, isGetter*/) {
     if (CC_DEV) {
         //var VAR_REG = /^[$A-Za-z_][0-9A-Za-z_$]*$/;
         //if (!VAR_REG.test(name)) {
@@ -379,7 +412,8 @@ function appendProp(cls, name /*, isGetter*/) {
         cls.__props__.push(name);
     }
 }
-function defineProp(cls, className, propName, defaultValue, attrs) {
+
+function defineProp (cls, className, propName, defaultValue, attrs) {
     if (CC_DEV) {
         // check default object value
         if (typeof defaultValue === 'object' && defaultValue) {
@@ -387,7 +421,8 @@ function defineProp(cls, className, propName, defaultValue, attrs) {
                 // check array empty
                 if (defaultValue.length > 0) {
                     cc.error('Default array must be empty, set default value of %s.%s to [], ' +
-                        'and initialize in "onLoad" or "ctor" please. (just like "this.%s = [...];")', className, propName, propName);
+                        'and initialize in "onLoad" or "ctor" please. (just like "this.%s = [...];")',
+                        className, propName, propName);
                     return;
                 }
             }
@@ -396,23 +431,29 @@ function defineProp(cls, className, propName, defaultValue, attrs) {
                 if (!_cloneable_DEV(defaultValue)) {
                     cc.error('Do not set default value to non-empty object, ' +
                         'unless the object defines its own "clone" function. Set default value of %s.%s to null or {}, ' +
-                        'and initialize in "onLoad" or "ctor" please. (just like "this.%s = {foo: bar};")', className, propName, propName);
+                        'and initialize in "onLoad" or "ctor" please. (just like "this.%s = {foo: bar};")',
+                        className, propName, propName);
                     return;
                 }
             }
         }
+
         // check base prototype to avoid name collision
         for (var base = cls.$super; base; base = base.$super) {
             // 这个循环只能检测到最上面的FireClass的父类，如果再上还有父类，将不做检测。
             if (base.prototype.hasOwnProperty(propName)) {
-                cc.error('Can not declare %s.%s, it is already defined in the prototype of %s', className, propName, className);
+                cc.error('Can not declare %s.%s, it is already defined in the prototype of %s',
+                    className, propName, className);
                 return;
             }
         }
     }
+
     // set default value
     Attr.setClassAttr(cls, propName, 'default', defaultValue);
+
     appendProp(cls, propName);
+
     // apply attributes
     if (attrs) {
         var onAfterProp = null;
@@ -433,16 +474,19 @@ function defineProp(cls, className, propName, defaultValue, attrs) {
         }
     }
 }
-function defineGetSet(cls, name, propName, val, attrs) {
+
+function defineGetSet (cls, name, propName, val, attrs) {
     var getter = val.get;
     var setter = val.set;
     var proto = cls.prototype;
     var d = Object.getOwnPropertyDescriptor(proto, propName);
+
     if (getter) {
         if (CC_DEV && d && d.get) {
             cc.error('"%s": the getter of "%s" is already defined!', name, propName);
             return;
         }
+
         if (attrs) {
             for (var i = 0; i < attrs.length; ++i) {
                 var attr = attrs[i];
@@ -451,22 +495,27 @@ function defineGetSet(cls, name, propName, val, attrs) {
                         'attribute index: %s', name, propName, i);
                     continue;
                 }
+
                 Attr.attr(cls, propName, attr);
+
                 // check attributes
                 if (CC_DEV && (attr.serializable === false || attr.editorOnly === true)) {
                     cc.warn('No need to use "serializable: false" or "editorOnly: true" for ' +
-                        'the getter of "%s.%s", every getter is actually non-serialized.', name, propName);
+                        'the getter of "%s.%s", every getter is actually non-serialized.',
+                        name, propName);
                 }
             }
         }
+
         var ForceSerializable = false;
         if (!ForceSerializable) {
             Attr.attr(cls, propName, Attr.NonSerialized);
         }
         if (ForceSerializable || CC_DEV) {
             // 不论是否 hide in inspector 都要添加到 props，否则 asset watcher 不能正常工作
-            appendProp(cls, propName /*, true*/);
+            appendProp(cls, propName/*, true*/);
         }
+
         if (d) {
             Object.defineProperty(proto, propName, {
                 get: getter
@@ -479,15 +528,18 @@ function defineGetSet(cls, name, propName, val, attrs) {
                 enumerable: true
             });
         }
+
         if (CC_DEV) {
             Attr.setClassAttr(cls, propName, 'hasGetter', true); // 方便 editor 做判断
         }
     }
+
     if (setter) {
         if (CC_DEV) {
             if (d && d.set) {
                 return cc.error('"%s": the setter of "%s" is already defined!', name, propName);
             }
+
             Object.defineProperty(proto, propName, {
                 set: setter,
                 configurable: true,
@@ -511,7 +563,8 @@ function defineGetSet(cls, name, propName, val, attrs) {
         }
     }
 }
-function getDefault(defaultVal) {
+
+function getDefault (defaultVal) {
     if (typeof defaultVal === 'function') {
         if (CC_EDITOR) {
             try {
@@ -528,8 +581,10 @@ function getDefault(defaultVal) {
     }
     return defaultVal;
 }
-function doDefine(className, baseClass, mixins, constructor, options) {
+
+function doDefine (className, baseClass, mixins, constructor, options) {
     var fireClass = _createCtor(constructor, baseClass, mixins, className, options);
+
     // extend - (NON-INHERITED) Create a new Class that inherits from this Class
     Object.defineProperty(fireClass, 'extend', {
         value: function (options) {
@@ -539,32 +594,40 @@ function doDefine(className, baseClass, mixins, constructor, options) {
         writable: true,
         configurable: true
     });
+
     if (baseClass) {
-        JS.extend(fireClass, baseClass); // 这里会把父类的 __props__ 复制给子类
+        JS.extend(fireClass, baseClass);    // 这里会把父类的 __props__ 复制给子类
         fireClass.$super = baseClass;
     }
+
     if (mixins) {
         for (var m = 0; m < mixins.length; ++m) {
             var mixin = mixins[m];
             // mixin prototype
             JS.mixin(fireClass.prototype, mixin.prototype);
+
             // mixin statics (this will also copy editor attributes for component)
             for (var p in mixin)
-                if (mixin.hasOwnProperty(p) && INVALID_STATICS.indexOf(p) < 0)
+                if (mixin.hasOwnProperty(p) && (!CC_DEV || INVALID_STATICS_DEV.indexOf(p) < 0))
                     fireClass[p] = mixin[p];
+
             // mixin attributes
             if (CCClass._isCCClass(mixin)) {
-                JS.mixin(Attr.getClassAttrs(fireClass).constructor.prototype, Attr.getClassAttrs(mixin).constructor.prototype);
+                JS.mixin(Attr.getClassAttrs(fireClass).constructor.prototype,
+                    Attr.getClassAttrs(mixin).constructor.prototype);
             }
         }
         // restore constuctor overridden by mixin
         fireClass.prototype.constructor = fireClass;
     }
+
     fireClass.prototype.__initProps__ = compileProps;
+
     JS.setClassName(className, fireClass);
     return fireClass;
 }
-function define(className, baseClasses, mixins, constructor, options) {
+
+function define (className, baseClasses, mixins, constructor, options) {
     if (cc.isChildClassOf(baseClasses, cc.Component)) {
         var frame = cc._RFpeek();
         if (frame) {
@@ -600,7 +663,8 @@ function define(className, baseClasses, mixins, constructor, options) {
     // not project component
     return doDefine(className, baseClasses, mixins, constructor, options);
 }
-function normalizeClassName(className) {
+
+function normalizeClassName (className) {
     if (CC_DEV) {
         var DefaultName = 'CCClass';
         if (className) {
@@ -627,36 +691,52 @@ function normalizeClassName(className) {
         return DefaultName;
     }
 }
-function getNewValueTypeCode(value) {
+
+function getNewValueTypeCode (value) {
     var clsName = JS.getClassName(value);
     var type = value.constructor;
     var res = 'new ' + clsName + '(';
-    for (var i = 0; i < type.__props__.length; i++) {
-        var prop = type.__props__[i];
-        var propVal = value[prop];
-        if (typeof propVal === 'object') {
-            cc.error('Can not construct %s because it contains object property.', clsName);
-            return 'new ' + clsName + '()';
+    var i;
+    if (type === cc.Mat3 || type === cc.Mat4) {
+        var data = value.data;
+        for (i = 0; i < data.length; i++) {
+            res += data[i];
+            if (i < data.length - 1) {
+                res += ',';
+            }
         }
-        res += propVal;
-        if (i < type.__props__.length - 1) {
-            res += ',';
+    }
+    else {
+        for (i = 0; i < type.__props__.length; i++) {
+            var prop = type.__props__[i];
+            var propVal = value[prop];
+            if (typeof propVal === 'object') {
+                cc.error('Can not construct %s because it contains object property.', clsName);
+                return 'new ' + clsName + '()';
+            }
+            res += propVal;
+            if (i < type.__props__.length - 1) {
+                res += ',';
+            }
         }
     }
     return res + ')';
 }
+
 // TODO - move escapeForJS, VAR_REG, getNewValueTypeCode to misc.js or a new source file
+
 // convert a normal string including newlines, quotes and unicode characters into a string literal
 // ready to use in JavaScript source
-function escapeForJS(s) {
+function escapeForJS (s) {
     return JSON.stringify(s).
-        // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
-        replace(/\u2028/g, '\\u2028').
-        replace(/\u2029/g, '\\u2029');
+    // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
+    replace(/\u2028/g, '\\u2028').
+               replace(/\u2029/g, '\\u2029');
 }
+
 // simple test variable name
 var VAR_REG = /^[$A-Za-z_][0-9A-Za-z_$]*$/;
-function compileProps(actualClass) {
+function compileProps (actualClass) {
     // init deferred properties
     var attrs = Attr.getClassAttrs(actualClass);
     var propList = actualClass.__props__;
@@ -664,13 +744,15 @@ function compileProps(actualClass) {
         deferredInitializer.init();
         propList = actualClass.__props__;
     }
+
     // functions for generated code
     var F = [];
     var func = '(function(){\n';
+
     for (var i = 0; i < propList.length; i++) {
         var prop = propList[i];
         var attrKey = prop + Attr.DELIMETER + 'default';
-        if (attrKey in attrs) {
+        if (attrKey in attrs) {  // getter does not have default
             var statement;
             if (VAR_REG.test(prop)) {
                 statement = 'this.' + prop + '=';
@@ -711,17 +793,22 @@ function compileProps(actualClass) {
             func += statement;
         }
     }
+
     func += '})';
+
     // if (CC_TEST && !isPhantomJS) {
     //     console.log(func);
     // }
+
     // overwite __initProps__ to avoid compile again
     actualClass.prototype.__initProps__ = Misc.cleanEval_F(func, F);
+
     // call instantiateProps immediately, no need to pass actualClass into it anymore
     this.__initProps__();
 }
-function _createCtor(ctor, baseClass, mixins, className, options) {
-    var useTryCatch = !(className && className.startsWith('cc.'));
+
+function _createCtor (ctor, baseClass, mixins, className, options) {
+    var useTryCatch = ! (className && className.startsWith('cc.'));
     var shouldAddProtoCtor;
     if (CC_EDITOR && ctor && baseClass) {
         // check super call in constructor
@@ -730,7 +817,7 @@ function _createCtor(ctor, baseClass, mixins, className, options) {
             cc.warn(cc._LogInfos.Editor.Class.callSuperCtor, className);
             // suppresss super call
             ctor = function () {
-                this._super = function () { };
+                this._super = function () {};
                 var ret = originCtor.apply(this, arguments);
                 this._super = null;
                 return ret;
@@ -742,6 +829,7 @@ function _createCtor(ctor, baseClass, mixins, className, options) {
         }
     }
     var superCallBounded = options && baseClass && boundSuperCalls(baseClass, options, className);
+
     if (CC_DEV && ctor) {
         // check ctor
         if (CCClass._isCCClass(ctor)) {
@@ -780,10 +868,12 @@ function _createCtor(ctor, baseClass, mixins, className, options) {
             }
         }
     }
+
     // append subclass user constructors
     if (ctor) {
         ctors.push(ctor);
     }
+
     // create class constructor
     var body;
     if (CC_DEV) {
@@ -795,14 +885,18 @@ function _createCtor(ctor, baseClass, mixins, className, options) {
     if (superCallBounded) {
         body += 'this._super=null;\n';
     }
+
     // instantiate props
     body += 'this.__initProps__(fireClass);\n';
+
     // call user constructors
     if (ctors.length > 0) {
         body += 'var cs=fireClass.__ctors__;\n';
+
         if (useTryCatch) {
             body += 'try{\n';
         }
+
         if (ctors.length <= 5) {
             for (var i = 0; i < ctors.length; i++) {
                 body += '(cs[' + i + ']).apply(this,arguments);\n';
@@ -812,25 +906,32 @@ function _createCtor(ctor, baseClass, mixins, className, options) {
             body += 'for(var i=0,l=cs.length;i<l;++i){\n';
             body += '(cs[i]).apply(this,arguments);\n}\n';
         }
+
         if (useTryCatch) {
             body += '}catch(e){\ncc._throw(e);\n}\n';
         }
     }
     body += '})';
+
     // jshint evil: true
     var fireClass = Misc.cleanEval_fireClass(body);
     // jshint evil: false
+
     Object.defineProperty(fireClass, '__ctors__', {
         value: ctors.length > 0 ? ctors : null,
+        // writable should be false,
+        // enumerable should be false
     });
+
     if (CC_EDITOR && shouldAddProtoCtor) {
-        fireClass.prototype.ctor = function () { };
+        fireClass.prototype.ctor = function () {};
     }
     return fireClass;
 }
-var SuperCallReg = /xyz/.test(function () { xyz; }) ? /\b_super\b/ : /.*/;
-var SuperCallRegStrict = /xyz/.test(function () { xyz; }) ? /this\._super\s*\(/ : /(NONE){99}/;
-function boundSuperCalls(baseClass, options, className) {
+
+var SuperCallReg = /xyz/.test(function(){xyz}) ? /\b_super\b/ : /.*/;
+var SuperCallRegStrict = /xyz/.test(function(){xyz}) ? /this\._super\s*\(/ : /(NONE){99}/;
+function boundSuperCalls (baseClass, options, className) {
     var hasSuperCall = false;
     for (var funcName in options) {
         if (BUILTIN_ENTRIES.indexOf(funcName) >= 0) {
@@ -851,11 +952,15 @@ function boundSuperCalls(baseClass, options, className) {
                     options[funcName] = (function (superFunc, func) {
                         return function () {
                             var tmp = this._super;
+
                             // Add a new ._super() method that is the same method but on the super-Class
                             this._super = superFunc;
+
                             var ret = func.apply(this, arguments);
+
                             // The method only need to be bound temporarily, so we remove it when we're done executing
                             this._super = tmp;
+
                             return ret;
                         };
                     })(superFunc, func);
@@ -869,11 +974,14 @@ function boundSuperCalls(baseClass, options, className) {
     }
     return hasSuperCall;
 }
-function declareProperties(cls, className, properties, baseClass, mixins) {
+
+function declareProperties (cls, className, properties, baseClass, mixins) {
     cls.__props__ = [];
+
     if (baseClass && baseClass.__props__) {
         cls.__props__ = baseClass.__props__.slice();
     }
+
     if (mixins) {
         for (var m = 0; m < mixins.length; ++m) {
             var mixin = mixins[m];
@@ -884,9 +992,11 @@ function declareProperties(cls, className, properties, baseClass, mixins) {
             }
         }
     }
+
     if (properties) {
         // 预处理属性
         preprocessAttrs(properties, className, cls);
+
         for (var propName in properties) {
             var val = properties[propName];
             var attrs = parseAttributes(val, className, propName);
@@ -899,9 +1009,11 @@ function declareProperties(cls, className, properties, baseClass, mixins) {
         }
     }
 }
+
 /**
  * @module cc
  */
+
 /**
  * !#en Defines a CCClass using the given specification, please see [Class](/en/scripting/class/) for details.
  * !#zh 定义一个 CCClass，传入参数必须是一个包含类型参数的字面量对象，具体用法请查阅[类型定义](/zh/scripting/class/)。
@@ -986,40 +1098,46 @@ function declareProperties(cls, className, properties, baseClass, mixins) {
         // ...
     };
  */
-function CCClass(options) {
+function CCClass (options) {
     if (!options) {
         return define();
     }
+
     var name = options.name;
-    var base = options.extends /* || CCObject*/;
+    var base = options.extends/* || CCObject*/;
     var mixins = options.mixins;
+
     // create constructor
     var cls;
     cls = define(name, base, mixins, options.ctor, options);
     if (!name) {
         name = cc.js.getClassName(cls);
     }
+
     // define Properties
     var properties = options.properties;
     if (typeof properties === 'function' ||
         (base && base.__props__ === null) ||
         (mixins && mixins.some(function (x) {
             return x.__props__ === null;
-        }))) {
-        deferredInitializer.push({ cls: cls, props: properties, mixins: mixins });
+        }))
+    ) {
+        deferredInitializer.push({cls: cls, props: properties, mixins: mixins});
         cls.__props__ = null;
     }
     else {
         declareProperties(cls, name, properties, base, options.mixins);
     }
+
     // define statics
     var statics = options.statics;
     if (statics) {
         var staticPropName;
         if (CC_DEV) {
             for (staticPropName in statics) {
-                if (INVALID_STATICS.indexOf(staticPropName) !== -1) {
-                    cc.error('Cannot define %s.%s because static member name can not be "%s".', name, staticPropName, staticPropName);
+                if (INVALID_STATICS_DEV.indexOf(staticPropName) !== -1) {
+                    cc.error('Cannot define %s.%s because static member name can not be "%s".', name, staticPropName,
+                        staticPropName);
                 }
             }
         }
@@ -1027,6 +1145,7 @@ function CCClass(options) {
             cls[staticPropName] = statics[staticPropName];
         }
     }
+
     // define functions
     for (var funcName in options) {
         if (BUILTIN_ENTRIES.indexOf(funcName) >= 0) {
@@ -1065,6 +1184,7 @@ function CCClass(options) {
             }
         }
     }
+
     if (CC_DEV) {
         var editor = options.editor;
         if (editor) {
@@ -1076,8 +1196,10 @@ function CCClass(options) {
             }
         }
     }
+
     return cls;
 }
+
 /**
  * Checks whether the constructor is created by cc.Class
  *
@@ -1089,6 +1211,7 @@ function CCClass(options) {
 CCClass._isCCClass = function (constructor) {
     return !!constructor && typeof constructor.__ctors__ !== 'undefined';
 };
+
 //
 // Optimized define function only for internal classes
 //
@@ -1109,6 +1232,7 @@ CCClass._fastDefine = function (className, constructor, serializableFields) {
         Attr.setClassAttr(constructor, key, 'default', val);
     }
 };
+
 /**
  * Checks whether subclass is child of superclass or equals to superclass
  *
@@ -1150,6 +1274,7 @@ cc.isChildClassOf = function (subclass, superclass) {
     }
     return false;
 };
+
 /**
  * Return all super classes
  * @method getInheritanceChain
@@ -1175,6 +1300,7 @@ CCClass.getInheritanceChain = function (klass) {
     }
     return chain;
 };
+
 var PrimitiveTypes = {
     // Specify that the input value must be integer in Inspector.
     // Also used to indicates that the type of elements in array or the type of value in dictionary is integer.
@@ -1185,10 +1311,12 @@ var PrimitiveTypes = {
     String: 'String',
 };
 var tmpAttrs = [];
-function parseAttributes(attrs, className, propName) {
+function parseAttributes (attrs, className, propName) {
     var ERR_Type = CC_DEV ? 'The %s of %s must be type %s' : '';
+
     tmpAttrs.length = 0;
     var result = tmpAttrs;
+
     var type = attrs.type;
     if (type) {
         var primitiveType = PrimitiveTypes[type];
@@ -1239,11 +1367,12 @@ function parseAttributes(attrs, className, propName) {
             }
         }
     }
-    function parseSimpleAttr(attrName, expectType, attrCreater) {
+
+    function parseSimpleAttr (attrName, expectType, attrCreater) {
         if (attrName in attrs) {
             var val = attrs[attrName];
             if (typeof val === expectType) {
-                if (!attrCreater) {
+                if ( !attrCreater ) {
                     var attr = {};
                     attr[attrName] = val;
                     result.push(attr);
@@ -1257,16 +1386,18 @@ function parseAttributes(attrs, className, propName) {
             }
         }
     }
+
     parseSimpleAttr('rawType', 'string', Attr.RawType);
     parseSimpleAttr('editorOnly', 'boolean', Attr.EditorOnly);
     //parseSimpleAttr('preventDeferredLoad', 'boolean');
     if (CC_DEV) {
         parseSimpleAttr('displayName', 'string');
-        parseSimpleAttr('multiline', 'boolean', { multiline: true });
-        parseSimpleAttr('readonly', 'boolean', { readonly: true });
+        parseSimpleAttr('multiline', 'boolean', {multiline: true});
+        parseSimpleAttr('readonly', 'boolean', {readonly: true});
         parseSimpleAttr('tooltip', 'string');
         parseSimpleAttr('slide', 'boolean');
     }
+
     if (attrs.url) {
         result.push({ saveUrlAsAsset: true });
     }
@@ -1278,26 +1409,29 @@ function parseAttributes(attrs, className, propName) {
             result.push({ animatable: false });
         }
     }
+
     if (CC_DEV) {
         var visible = attrs.visible;
         if (typeof visible !== 'undefined') {
             if (!visible) {
-                result.push({ visible: false });
+                result.push({visible: false});
             }
             else if (typeof visible === 'function') {
-                result.push({ visible: visible });
+                result.push({visible: visible});
             }
         }
         else {
             var startsWithUS = (propName.charCodeAt(0) === 95);
             if (startsWithUS) {
-                result.push({ visible: false });
+                result.push({visible: false});
             }
         }
     }
+
     //if (attrs.custom) {
     //    result.push( { custom: attrs.custom });
     //}
+
     var range = attrs.range;
     if (range) {
         if (Array.isArray(range)) {
@@ -1315,8 +1449,10 @@ function parseAttributes(attrs, className, propName) {
     parseSimpleAttr('min', 'number');
     parseSimpleAttr('max', 'number');
     parseSimpleAttr('step', 'number');
+
     return result;
 }
+
 module.exports = {
     isArray: function (defaultVal) {
         defaultVal = getDefault(defaultVal);
