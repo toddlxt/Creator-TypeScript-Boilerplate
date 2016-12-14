@@ -48,6 +48,7 @@ let currentProperties: {[uuid: string]: ICCProperties} = {};
 let currentMixins: {[uuid: string]: Array<any>} = {};
 let currentEditor: {[uuid: string]: ICCEditor} = {};
 let defined: {[uuid: string]: boolean} = {};
+let definedClass: {[uuid: string]: any} = {};
 // Get the UUID of currently compiling script
 function getUUID() {
     return cc._RFpeek().uuid;
@@ -68,7 +69,7 @@ export function CCComponent(constructor) {
         cc.warn(`Please do not define parameters for a component constructor in ${getScriptName()}!`);
     }
     let uuid = getUUID();
-    if (defined[uuid]) return;
+    if (defined[uuid]) return definedClass[uuid];
     constructor.$super = cc.Component;
     let cls = define(void 0, constructor, currentMixins[uuid], void 0, {});
     let name = cc.js.getClassName(cls);
@@ -80,6 +81,7 @@ export function CCComponent(constructor) {
     currentMixins = {};
     currentEditor = {};
     defined[uuid] = true;
+    definedClass[uuid] = cls;
     return cls;
 }
 /*
