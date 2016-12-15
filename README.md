@@ -8,7 +8,7 @@
   4. 在IDE（如WebStorm）中开启TypeScript自动编译功能（WebStorm开启方法：File->Settings->Languages & Frameworks->TypeScript，右边 勾选Use TypeScript Service与Enable TypeScript Compiler）。若你使用的IDE无此功能（如Visual Studio Code），使用命令行进入project目录并运行`tsc -w`使TypeScript自动监视文件修改并自动编译。  
   5. 在project/typescript目录下编辑你的代码，它们将被自动编译至project/assets/Script/目录下（在project/tsconfig.json中修改outDir字段以更改目标目录）。  
   
-> 如果你使用的是Visual Studio Code，它最新版自带的TypeScript版本为2.0.10。你需要用命令行进行project目录并运行`cnpm install typescript -S`来在项目文件夹中安装最新版的TypeScript（当前为2.1.4），并在关闭Visual Studio Code，重新打开project时，在弹出的TypeScript版本提示框中选择使用项目目录的新版TypeScript。  
+> 此项目需要TypeScript 2.1或以上的版本。~~如果你使用的是Visual Studio Code，它最新版自带的TypeScript版本为2.0.10。你需要用命令行进行project目录并运行`cnpm install typescript -S`来在项目文件夹中安装最新版的TypeScript（当前为2.1.4），并在关闭Visual Studio Code，重新打开project时，在弹出的TypeScript版本提示框中选择使用项目目录的新版TypeScript。~~Visual Studio Code 1.8自带的TypeScript版本已经是2.1了。  
 
 ## 功能介绍
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了简单展示TypeScript的功能，此项目使用TypeScript的类与泛型功能实现了一个简单的MVC架构（请看AbstractController, AbstractModel与AbstractComponent三个类），并在此之上实现了Hello模块（请看HelloController, HelloModel与HelloView），实现了使用async, await异步使用fetch请求本机IP并查询IP对应的国家、城市、区域的功能。（数据是向我的一个快要废弃的服务器请求的，只是为了展示怎样使用async, await, fetch进行网络请求，可能随时停用导致请求不到数据。）
