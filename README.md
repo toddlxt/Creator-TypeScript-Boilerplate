@@ -26,7 +26,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;有一种特殊情况是，继承自cc.Component的类（在Creator中可以拖到节点属性编辑器上的脚本）是无法用TypeScript的extends cc.Component关键字来实现的，因为cc.Class内部还会做一些额外的工作。  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了解决此问题，你需要使用project/typescript/decorators/ComponentDecorators.ts中提供的四个装饰器：@CCComponent, @CCEditor, @CCProperty, @CCMixins（除了@CCComponent外其它装饰器对于一个Component来说都是可选的）。  
 
-一个简单的Component定义像这样：![简单Component示例](http://forum.cocos.com/uploads/default/original/2X/b/b855b64b4957fe865234a3103f3d5b9772e95542.gif)
+一个简单的Component定义像这样：![简单Component示例](http://forum.cocos.com//uploads/default/original/2X/5/54eb817d45a898229c686cf903e610f122f72814.gif)
 四个装饰器完整的使用方法如下，熟悉cc.Class()函数的童鞋应该一眼就能认出对应的功能：  
 ```js
 // ComplicateComponent.ts:
