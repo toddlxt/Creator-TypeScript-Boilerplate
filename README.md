@@ -26,20 +26,8 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;有一种特殊情况是，继承自cc.Component的类（在Creator中可以拖到节点属性编辑器上的脚本）是无法用TypeScript的extends cc.Component关键字来实现的，因为cc.Class内部还会做一些额外的工作。  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了解决此问题，你需要使用project/typescript/decorators/ComponentDecorators.ts中提供的四个装饰器：@CCComponent, @CCEditor, @CCProperty, @CCMixins（除了@CCComponent外其它装饰器对于一个Component来说都是可选的）。  
 
-一个简单的Component定义像这样：  
-```js
-// SimpleComponent.ts:
-import {CCComponent, CCProperty} from "../decorators/ComponentDecorators";
-@CCComponent
-export class SimpleComponent extends cc.Component {
-    @CCProperty({
-        default: null,
-        type: cc.Label
-    })
-    public someLabel: cc.Label;
-}
-```
-四个装饰器完整的使用方法如下，熟悉cc.Class()函数的童鞋应该一眼就能认出对应的功能：  
+一个简单的Component定义像这样：![简单Component示例](http://forum.cocos.com/uploads/default/original/2X/b/b855b64b4957fe865234a3103f3d5b9772e95542.gif)
+四个装饰器完整的使用方法如下，熟悉cc.Class()函数的童鞋应该一眼就能认出对应的功能：  
 ```js
 // ComplicateComponent.ts:
 import {CCComponent, CCEditor, CCProperty, CCMixins} from "../decorators/ComponentDecorators";
@@ -99,56 +87,9 @@ export class ComplicateComponent extends cc.Component {
         getComponent<T>(typeOrClassName: (new()=>T)): T;
         // 函数重载，如果传入的参数是string则返回any
         getComponent(typeOrClassName: string): any;
- 这样如果你传入getComponent()的是一个类（注意不是字符串形式的类名），TypeScript就会知道返回的是这个类的实例。这样你在IDE中输入`this.getComponent(cc.Graphics).`的时候，IDE会自动提示出cc.Graphics的方法。该功能也适用于任何自定义的Component，例如：  
-
-         // A.ts:
-         @CCComponent
-         export class A extends cc.Component {
-             public B() {
-             }
-         }
- 在其它类中引用A：  
- 
-         // Test.ts:
-         import {A} from './A.ts';
-         @CCComponent
-         export class C extends cc.Component {
-             public D() {
-                 this.getComponent(A). // 此处IDE会提示A类所有public的方法
-             }
-         }
-6. 文件重命名、类重命名、变量重命名、方法重命名，请统统使用IDE的重构功能。WebStorm中重命名的快捷键是Shift+F6，或者右击文件、类名、变量名、方法名，弹出的菜单中选择refactor->rename。因为TypeScript对你的代码结构有着非常好的了解，所有IDE可以正确地修改所有对重命名对象的引用。例如：  
-
-        // Example.1.ts:
-        export class A {
-            public t: string;
-        }
-        export class B {
-            public t: string;
-        }
-
-        // Example.2.ts:
-        import {A, B} from './Example.1';
-        class C {
-            example() {
-                let a = new A();
-                a.t = "a";
-                let b = new B();
-                b.t = "b";
-            }
-        }
-这时在Example.1.ts中使用refactor->rename（或Shift+F6）对`A`命名为`AA`，`AA.t`命名为`AA.tt`，则Example.2.ts自动变成：  
-
-        import {AA, B} from './Example.1';
-        class C {
-            example() {
-                let a = new AA();
-                a.tt = "a";
-                let b = new B();
-                b.t = "b";
-            }
-        }
-从此再也不用担心变量命名啦！先写完再说，哪里不爽改哪里！  
+ 这样如果你传入getComponent()的是一个类（注意不是字符串形式的类名），TypeScript就会知道返回的是这个类的实例。这样你在IDE中输入`this.getComponent(cc.Graphics).`的时候，IDE会自动提示出cc.Graphics的方法。该功能也适用于任何自定义的Component，例如：![getComponent示例](http://forum.cocos.com/uploads/default/original/2X/b/b855b64b4957fe865234a3103f3d5b9772e95542.gif)
+6. 文件重命名、类重命名、变量重命名、方法重命名，请统统使用IDE的重构功能。WebStorm中重命名的快捷键是Shift+F6，或者右击文件、类名、变量名、方法名，弹出的菜单中选择refactor->rename。因为TypeScript对你的代码结构有着非常好的了解，所有IDE可以正确地修改所有对重命名对象的引用。例如：![Refactor示例](http://forum.cocos.com/uploads/default/original/2X/c/c48fc71257f6e59c07110b1768af184580de736e.gif)
+从此再也不用担心变量命名啦！先写完再说，哪里不爽改哪里！  
 > 注意：若你正在将项目的js代码升级为ts，在升级完成前请慎用重构功能。因为此时TypeScript对你的代码了解不完全，IDE有可能发生错误重构，例如上例中有可能将`B.t`也命名为`B.tt`。所有代码转换为ts之后，我还没有发现过WebStorm有重构错误。  
 
 7. assets/Script/plugins下的文件请保持在Creator中设置为插件的状态。  
