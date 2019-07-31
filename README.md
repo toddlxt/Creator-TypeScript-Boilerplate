@@ -55,7 +55,7 @@ export class ComplicateComponent extends cc.Component {
         notify() {
             this.updateLabel();
         }
-    }
+    })
     private someInteger: number;
     
     public onLoad() {
